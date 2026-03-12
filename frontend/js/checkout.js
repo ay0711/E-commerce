@@ -30,6 +30,71 @@ function getTotals(items) {
     return { subtotal, tax, shipping, total };
 }
 
+function setFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+
+    let errorNode = field.parentElement.querySelector('.field-error');
+    if (!errorNode) {
+        errorNode = document.createElement('small');
+        errorNode.className = 'field-error';
+        field.parentElement.appendChild(errorNode);
+    }
+
+    errorNode.textContent = message || '';
+    field.classList.toggle('input-error', Boolean(message));
+}
+
+function validateCheckoutFields() {
+    const values = {
+        street: document.getElementById('street').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        state: document.getElementById('state').value.trim(),
+        zipCode: document.getElementById('zipCode').value.trim(),
+        country: document.getElementById('country').value.trim(),
+    };
+
+    const checks = [
+        ['street', values.street.length < 5 ? 'Street address should be at least 5 characters.' : ''],
+        ['city', !/^[A-Za-z\s.'-]{2,}$/.test(values.city) ? 'Enter a valid city name.' : ''],
+        ['state', !/^[A-Za-z\s.'-]{2,}$/.test(values.state) ? 'Enter a valid state/region.' : ''],
+        ['zipCode', !/^[A-Za-z0-9\-\s]{3,10}$/.test(values.zipCode) ? 'Zip code format is invalid.' : ''],
+        ['country', !/^[A-Za-z\s.'-]{2,}$/.test(values.country) ? 'Enter a valid country.' : ''],
+    ];
+
+    checks.forEach(([id, msg]) => setFieldError(id, msg));
+    return !checks.some(([, msg]) => msg);
+}
+
+async function loadSavedAddress(userId) {
+    try {
+        const response = await fetch(`${API_ENDPOINTS.users}/profile/${userId}`);
+        const profile = await response.json();
+        if (!response.ok) return;
+
+        const address = profile.address || {};
+        document.getElementById('street').value = address.street || '';
+        document.getElementById('city').value = address.city || '';
+        document.getElementById('state').value = address.state || '';
+        document.getElementById('zipCode').value = address.zipCode || '';
+        document.getElementById('country').value = address.country || '';
+    } catch (error) {
+        // Silent fail: checkout still works even if profile prefill is unavailable.
+    }
+}
+
+async function saveAddressToProfile(userId, shippingAddress) {
+    try {
+        await fetch(`${API_ENDPOINTS.users}/profile/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: shippingAddress }),
+        });
+    } catch (error) {
+        // Non-blocking update.
+    }
+}
+
 function renderCheckoutSummary(items) {
     const orderItems = document.getElementById('orderItems');
     if (!orderItems) return;
@@ -80,6 +145,11 @@ async function submitOrder(e) {
         return;
     }
 
+    if (!validateCheckoutFields()) {
+        showAlert('Please fix the highlighted fields before placing your order.', 'error');
+        return;
+    }
+
     const shippingAddress = {
         street: document.getElementById('street').value.trim(),
         city: document.getElementById('city').value.trim(),
@@ -107,6 +177,8 @@ async function submitOrder(e) {
             return;
         }
 
+        await saveAddressToProfile(user._id, shippingAddress);
+
         await clearUserCart(user._id);
         showAlert('Order placed successfully!', 'success');
         setTimeout(() => {
@@ -126,6 +198,8 @@ async function initCheckoutPage() {
         }, 700);
         return;
     }
+
+    await loadSavedAddress(user._id);
 
     const items = await getCheckoutItems();
     renderCheckoutSummary(items);

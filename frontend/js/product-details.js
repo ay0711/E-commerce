@@ -10,13 +10,17 @@ function createStars(rating) {
     return `${'★'.repeat(safeRating)}${'☆'.repeat(5 - safeRating)}`;
 }
 
+function safeImage(url) {
+    return url || 'fallback-product.svg';
+}
+
 function renderProductDetails(product) {
     const container = document.getElementById('productDetailsContent');
     if (!container) return;
 
     container.innerHTML = `
         <div>
-            <img src="${product.image}" alt="${product.name}" class="product-details-image">
+            <img src="${safeImage(product.image)}" alt="${product.name}" class="product-details-image" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" onerror="this.onerror=null;this.src='fallback-product.svg';">
         </div>
         <div class="product-details-info">
             <div class="product-category">${product.category || 'General'}</div>

@@ -1,5 +1,9 @@
 // Cart page functionality
 
+function safeImage(url) {
+    return url || 'fallback-product.svg';
+}
+
 async function getGuestCartItems() {
     const localCart = getLocalCart();
     if (!localCart.length) return [];
@@ -73,8 +77,8 @@ function renderCartItems(items) {
     cartItemsContainer.innerHTML = items.map((item) => {
         const product = item.product;
         return `
-            <div class="cart-item" data-product-id="${product._id}">
-                <img src="${product.image}" alt="${product.name}" class="cart-item-image">
+            <div class="cart-item card-enter" data-product-id="${product._id}">
+                <img src="${safeImage(product.image)}" alt="${product.name}" class="cart-item-image" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 120px" onerror="this.onerror=null;this.src='fallback-product.svg';">
                 <div class="cart-item-info">
                     <h3>${product.name}</h3>
                     <p class="cart-item-price">$${Number(product.price || 0).toFixed(2)}</p>

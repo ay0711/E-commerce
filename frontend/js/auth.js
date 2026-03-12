@@ -26,6 +26,8 @@ function updateUserInfo() {
     if (user) {
         userInfoElement.innerHTML = `
             <span>Welcome, ${user.name}</span>
+            <a href="account.html">My Orders</a>
+            <a href="profile.html">Profile</a>
             <a href="#" id="logoutBtn">Logout</a>
         `;
         
@@ -67,16 +69,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Show alert message
 function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    
-    const container = document.querySelector('.container');
-    if (container) {
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
+    const body = document.body;
+    let toastContainer = document.getElementById('toastContainer');
+
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'toast-container';
+        body.appendChild(toastContainer);
     }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 220);
+    }, 3200);
 }

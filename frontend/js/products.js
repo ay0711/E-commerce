@@ -9,11 +9,29 @@ let currentSort = 'relevance';
 const PRODUCTS_PAGE_SIZE = 24;
 let visibleCount = PRODUCTS_PAGE_SIZE;
 
+function safeImage(url) {
+    return url || 'fallback-product.svg';
+}
+
+function productSkeletonMarkup() {
+    return Array.from({ length: 8 }).map(() => `
+        <div class="product-card skeleton-card">
+            <div class="skeleton-box skeleton-img"></div>
+            <div class="product-info">
+                <div class="skeleton-line w-30"></div>
+                <div class="skeleton-line w-80"></div>
+                <div class="skeleton-line w-60"></div>
+                <div class="skeleton-line w-40"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Fetch and display products
 async function fetchProducts() {
     try {
         const productsGrid = document.getElementById('productsGrid');
-        productsGrid.innerHTML = '<div class="loading">Loading products...</div>';
+        productsGrid.innerHTML = productSkeletonMarkup();
         
         let url = API_ENDPOINTS.products;
         const params = new URLSearchParams();
@@ -103,8 +121,8 @@ function displayProducts(products) {
     }
     
     productsGrid.innerHTML = products.map(product => `
-        <div class="product-card" onclick="viewProduct('${product._id}')">
-            <img src="${product.image}" alt="${product.name}" class="product-image">
+        <div class="product-card card-enter" onclick="viewProduct('${product._id}')">
+            <img src="${safeImage(product.image)}" alt="${product.name}" class="product-image" loading="lazy" decoding="async" sizes="(max-width: 768px) 50vw, 25vw" onerror="this.onerror=null;this.src='fallback-product.svg';">
             <div class="product-info">
                 <div class="product-category">${product.category}</div>
                 <h3>${product.name}</h3>
