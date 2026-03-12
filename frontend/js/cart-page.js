@@ -4,21 +4,35 @@ async function getGuestCartItems() {
     const localCart = getLocalCart();
     if (!localCart.length) return [];
 
+    const missingProductIds = [];
+
     const items = await Promise.all(
         localCart.map(async (item) => {
             try {
                 const response = await fetch(`${API_ENDPOINTS.products}/${item.productId}`);
-                if (!response.ok) return null;
+                if (!response.ok) {
+                    // Product was removed from catalog; mark stale guest-cart entry for cleanup.
+                    missingProductIds.push(item.productId);
+                    return null;
+                }
+
                 const product = await response.json();
                 return {
                     product,
                     quantity: item.quantity,
                 };
             } catch (error) {
+                missingProductIds.push(item.productId);
                 return null;
             }
         })
     );
+
+    if (missingProductIds.length > 0) {
+        const cleanedCart = localCart.filter(item => !missingProductIds.includes(item.productId));
+        saveLocalCart(cleanedCart);
+        await updateCartCount();
+    }
 
     return items.filter(Boolean);
 }
