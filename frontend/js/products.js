@@ -9,6 +9,97 @@ let currentSort = 'relevance';
 const PRODUCTS_PAGE_SIZE = 24;
 let visibleCount = PRODUCTS_PAGE_SIZE;
 
+const WISHLIST_KEY = 'wishlistProductIds';
+
+function getWishlist() {
+    try {
+        const raw = localStorage.getItem(WISHLIST_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function setWishlist(ids) {
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(ids));
+}
+
+function isWishlisted(productId) {
+    return getWishlist().includes(productId);
+}
+
+function toggleWishlist(productId) {
+    const ids = getWishlist();
+    const exists = ids.includes(productId);
+    const next = exists ? ids.filter(id => id !== productId) : [...ids, productId];
+    setWishlist(next);
+    applyClientTransformations();
+    showAlert(exists ? 'Removed from wishlist' : 'Added to wishlist', 'info');
+}
+
+function findProductById(productId) {
+    return allProducts.find(p => p._id === productId);
+}
+
+function ensureQuickViewModal() {
+    if (document.getElementById('quickViewModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'quickViewModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content quick-view-content" role="dialog" aria-modal="true" aria-label="Quick view product">
+            <button type="button" class="close" id="quickViewClose" aria-label="Close quick view">&times;</button>
+            <div id="quickViewBody"></div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+
+    const closeBtn = document.getElementById('quickViewClose');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+}
+
+function openQuickView(productId) {
+    const product = findProductById(productId);
+    if (!product) return;
+
+    ensureQuickViewModal();
+    const modal = document.getElementById('quickViewModal');
+    const body = document.getElementById('quickViewBody');
+    if (!modal || !body) return;
+
+    body.innerHTML = `
+        <div class="quick-view-grid">
+            <img class="quick-view-image" src="${safeImage(product.image)}" alt="${product.name}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='fallback-product.svg';">
+            <div>
+                <p class="product-category">${product.category || 'General'}</p>
+                <h3>${product.name}</h3>
+                <p class="product-description">${product.description || ''}</p>
+                <p class="product-price">$${Number(product.price || 0).toFixed(2)}</p>
+                <div class="product-stock ${Number(product.stock || 0) > 0 ? 'in-stock' : 'out-of-stock'}">
+                    ${Number(product.stock || 0) > 0 ? `In Stock (${Number(product.stock || 0)})` : 'Out of Stock'}
+                </div>
+                <div class="quick-view-actions">
+                    <button class="btn btn-primary" onclick="addToCart('${product._id}')">Add to Cart</button>
+                    <button class="btn btn-success" onclick="viewProduct('${product._id}')">View Full Details</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+}
+
 function safeImage(url) {
     return url || 'fallback-product.svg';
 }
@@ -135,9 +226,17 @@ function displayProducts(products) {
                 <div class="product-stock ${Number(product.stock || 0) > 0 ? 'in-stock' : 'out-of-stock'}">
                     ${Number(product.stock || 0) > 0 ? `In Stock (${Number(product.stock || 0)})` : 'Out of Stock'}
                 </div>
-                <button class="btn btn-primary btn-block" onclick="event.stopPropagation(); addToCart('${product._id}')">
-                    Add to Cart
-                </button>
+                <div class="product-card-actions" onclick="event.stopPropagation();">
+                    <button class="btn btn-primary btn-block" onclick="addToCart('${product._id}')">
+                        Add to Cart
+                    </button>
+                    <button class="btn btn-success btn-block" onclick="openQuickView('${product._id}')" aria-label="Quick view ${product.name}">
+                        Quick View
+                    </button>
+                    <button class="wishlist-btn ${isWishlisted(product._id) ? 'active' : ''}" onclick="toggleWishlist('${product._id}')" aria-label="Toggle wishlist for ${product.name}">
+                        ${isWishlisted(product._id) ? '♥ Saved' : '♡ Save'}
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
@@ -150,6 +249,7 @@ function viewProduct(productId) {
 
 // Category filter
 document.addEventListener('DOMContentLoaded', () => {
+    ensureQuickViewModal();
     const categoryButtons = document.querySelectorAll('.category-btn');
     categoryButtons.forEach(btn => {
         btn.addEventListener('click', () => {
