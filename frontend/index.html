@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Store</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>ShopHub</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="active">Home</a>
+                <a href="#" id="categoryFilter">Categories</a>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products...">
+                    <button id="searchBtn">Search</button>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <span id="userInfo"></span>
+                <a href="cart.html" class="cart-icon">
+                    🛒 Cart <span id="cartCount" class="badge">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h2>Welcome to ShopHub</h2>
+            <p>Discover amazing products at great prices</p>
+        </div>
+    </section>
+
+    <!-- Category Filter -->
+    <section class="categories">
+        <div class="container">
+            <button class="category-btn active" data-category="">All</button>
+            <button class="category-btn" data-category="Electronics">Electronics</button>
+            <button class="category-btn" data-category="Sports">Sports</button>
+            <button class="category-btn" data-category="Home">Home</button>
+            <button class="category-btn" data-category="Accessories">Accessories</button>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products">
+        <div class="container">
+            <h2>Our Products</h2>
+            <div id="productsGrid" class="products-grid">
+                <div class="loading">Loading products...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ShopHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/products.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ShopHub</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1><a href="index.html" style="color: white; text-decoration: none;">ShopHub</a></h1>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html">Login</a>
+                <a href="cart.html" class="cart-icon">
+                    🛒 Cart <span id="cartCount" class="badge">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Register Section -->
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-image">
+                    <h2>Join ShopHub Today!</h2>
+                    <p>Create an account to start shopping and enjoy exclusive benefits</p>
+                    <div class="auth-illustration">
+                        <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="50" y="50" width="300" height="200" rx="10" fill="#27ae60" opacity="0.1"/>
+                            <circle cx="200" cy="120" r="40" fill="#27ae60" opacity="0.3"/>
+                            <rect x="140" y="170" width="120" height="60" rx="5" fill="#27ae60" opacity="0.2"/>
+                            <path d="M 180 110 L 195 125 L 220 100" stroke="#27ae60" stroke-width="4" fill="none" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <div class="auth-benefits">
+                        <h3>Why Join Us?</h3>
+                        <ul>
+                            <li>✓ Fast and secure checkout</li>
+                            <li>✓ Track your orders</li>
+                            <li>✓ Save your favorite items</li>
+                            <li>✓ Exclusive deals and offers</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="auth-form-container">
+                    <h2>Create Your Account</h2>
+                    <p class="auth-subtitle">Fill in the details to get started</p>
+                    
+                    <form id="registerForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="registerName">Full Name</label>
+                            <input type="text" id="registerName" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" placeholder="Create a password (min. 6 characters)" required minlength="6">
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block btn-large">Create Account</button>
+                    </form>
+                    
+                    <div class="auth-divider">
+                        <span>or</span>
+                    </div>
+                    
+                    <p class="auth-switch">
+                        Already have an account? <a href="login.html">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 ShopHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/auth-page.js"></script>
+</body>
+</html>
