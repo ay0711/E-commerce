@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const seedProducts = require('../data/seedProducts');
+const { mapExternalProduct, extractItems } = require('../utils/productMapper');
 
 // Get all products
 router.get('/', async (req, res) => {
@@ -23,6 +25,55 @@ router.get('/', async (req, res) => {
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Seed default products
+router.post('/seed', async (req, res) => {
+  try {
+    await Product.deleteMany({});
+    const inserted = await Product.insertMany(seedProducts);
+
+    res.status(201).json({
+      message: 'Products seeded successfully',
+      count: inserted.length,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Import products from an external API URL
+router.post('/import-url', async (req, res) => {
+  try {
+    const { url } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ message: 'url is required' });
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(response.status).json({ message: `Failed to fetch source: ${response.status}` });
+    }
+
+    const payload = await response.json();
+    const rawItems = extractItems(payload);
+    const mappedProducts = rawItems.map(mapExternalProduct).filter(Boolean);
+
+    if (mappedProducts.length === 0) {
+      return res.status(400).json({ message: 'No valid products found in source response' });
+    }
+
+    await Product.deleteMany({});
+    const inserted = await Product.insertMany(mappedProducts);
+
+    return res.status(201).json({
+      message: 'Products imported successfully',
+      count: inserted.length,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 });
 
