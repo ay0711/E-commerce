@@ -1,11 +1,25 @@
 // Authentication page functionality
 
+function getNextPath() {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get('next');
+
+    if (!next) return 'index.html';
+    if (next.startsWith('http://') || next.startsWith('https://') || next.startsWith('//')) {
+        return 'index.html';
+    }
+
+    return next;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    const nextPath = getNextPath();
+
     // Check if user is already logged in
     const user = getCurrentUser();
     if (user && (window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html'))) {
         // Redirect to home if already logged in
-        window.location.href = 'index.html';
+        window.location.href = nextPath;
         return;
     }
 
@@ -39,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showAlert('Login successful! Redirecting...', 'success');
                     
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = nextPath;
                     }, 1000);
                 } else {
                     showAlert(data.message || 'Login failed. Please check your credentials.', 'error');
@@ -92,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showAlert('Account created successfully! Redirecting...', 'success');
                     
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = nextPath;
                     }, 1000);
                 } else {
                     showAlert(data.message || 'Registration failed. Please try again.', 'error');

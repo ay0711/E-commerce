@@ -3,25 +3,8 @@
 async function getCheckoutItems() {
     const user = getCurrentUser();
 
-    if (!user) {
-        const localItems = getLocalCart();
-        if (!localItems.length) return [];
-
-        const products = await Promise.all(localItems.map(async (item) => {
-            try {
-                const response = await fetch(`${API_ENDPOINTS.products}/${item.productId}`);
-                if (!response.ok) return null;
-                const product = await response.json();
-                return {
-                    product,
-                    quantity: item.quantity,
-                };
-            } catch (error) {
-                return null;
-            }
-        }));
-
-        return products.filter(Boolean);
+    if (!user || !user._id) {
+        return [];
     }
 
     try {
@@ -73,11 +56,6 @@ function renderCheckoutSummary(items) {
     document.getElementById('total').textContent = `$${totals.total.toFixed(2)}`;
 }
 
-async function clearGuestCart() {
-    saveLocalCart([]);
-    await updateCartCount();
-}
-
 async function clearUserCart(userId) {
     await fetch(`${API_ENDPOINTS.cart}/${userId}`, { method: 'DELETE' });
     await updateCartCount();
@@ -87,6 +65,14 @@ async function submitOrder(e) {
     e.preventDefault();
 
     const user = getCurrentUser();
+    if (!user || !user._id) {
+        showAlert('Please login to place an order.', 'error');
+        setTimeout(() => {
+            window.location.href = 'login.html?next=checkout.html';
+        }, 700);
+        return;
+    }
+
     const items = await getCheckoutItems();
 
     if (!items.length) {
@@ -104,45 +90,43 @@ async function submitOrder(e) {
 
     const paymentMethod = document.getElementById('paymentMethod').value;
 
-    if (user && user._id) {
-        try {
-            const response = await fetch(API_ENDPOINTS.orders, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: user._id,
-                    shippingAddress,
-                    paymentMethod,
-                }),
-            });
+    try {
+        const response = await fetch(API_ENDPOINTS.orders, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: user._id,
+                shippingAddress,
+                paymentMethod,
+            }),
+        });
 
-            const data = await response.json();
-            if (!response.ok) {
-                showAlert(data.message || 'Unable to place order.', 'error');
-                return;
-            }
-
-            await clearUserCart(user._id);
-            showAlert('Order placed successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1200);
-            return;
-        } catch (error) {
-            showAlert('Network error while placing order.', 'error');
+        const data = await response.json();
+        if (!response.ok) {
+            showAlert(data.message || 'Unable to place order.', 'error');
             return;
         }
-    }
 
-    // Guest checkout fallback
-    await clearGuestCart();
-    showAlert('Order placed as guest successfully!', 'success');
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1200);
+        await clearUserCart(user._id);
+        showAlert('Order placed successfully!', 'success');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1200);
+    } catch (error) {
+        showAlert('Network error while placing order.', 'error');
+    }
 }
 
 async function initCheckoutPage() {
+    const user = getCurrentUser();
+    if (!user || !user._id) {
+        showAlert('Please login to access checkout.', 'info');
+        setTimeout(() => {
+            window.location.href = 'login.html?next=checkout.html';
+        }, 700);
+        return;
+    }
+
     const items = await getCheckoutItems();
     renderCheckoutSummary(items);
 

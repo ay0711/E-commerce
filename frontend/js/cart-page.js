@@ -179,6 +179,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', () => {
+            const user = getCurrentUser();
+            if (!user) {
+                showAlert('Please login to continue to checkout.', 'info');
+                setTimeout(() => {
+                    window.location.href = 'login.html?next=checkout.html';
+                }, 600);
+                return;
+            }
+
             window.location.href = 'checkout.html';
         });
     }
