@@ -18,10 +18,14 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (e.g. mobile apps, curl)
+    if (!origin) return callback(null, true);
+    // Allow all Vercel preview/production domains
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow if list is empty (unrestricted) or origin is explicitly listed
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
     return callback(new Error('Not allowed by CORS'));
   }
 };
